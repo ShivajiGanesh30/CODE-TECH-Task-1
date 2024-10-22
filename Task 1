@@ -1,0 +1,42 @@
+# Load libraries
+library(ggplot2)
+library(caret)
+
+# Load dataset
+data("mtcars")
+
+# Split data into training (70%) and testing (30%) sets
+set.seed(123)
+splitIndex <- createDataPartition(mtcars$mpg, p = 0.7, list = FALSE)
+train_data <- mtcars[splitIndex, ]
+test_data <- mtcars[-splitIndex, ]
+
+# Train linear regression model (mpg ~ wt)
+model <- lm(mpg ~ wt, data = train_data)
+
+# Summary of model
+summary(model)
+
+# Predictions on test data
+predictions <- predict(model, newdata = test_data)
+
+# Evaluate model with MSE and R-squared
+mse <- mean((test_data$mpg - predictions)^2)
+cat("Mean Squared Error (MSE):", mse, "\n")
+
+SST <- sum((test_data$mpg - mean(train_data$mpg))^2)
+SSE <- sum((test_data$mpg - predictions)^2)
+r_squared <- 1 - (SSE / SST)
+cat("R-squared:", r_squared, "\n")
+
+# Plot the regression line (training data)
+ggplot(train_data, aes(x = wt, y = mpg)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Regression Line (Training Data)", x = "Weight", y = "MPG")
+
+# Plot actual vs predicted values (test data)
+ggplot(data = test_data, aes(x = mpg, y = predictions)) +
+  geom_point(color = "blue") +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(title = "Actual vs Predicted MPG", x = "Actual MPG", y = "Predicted MPG")
